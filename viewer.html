@@ -7,18 +7,7 @@
 <div id="wrapper">
 </div>
 
-<script>
-document.querySelector('#wrapper').style.whiteSpace = 'pre-line';
-window.onerror = function (errorMessage, _, __, ___, err) {
-  document.querySelector('#wrapper').style.whiteSpace = 'pre-line';
-  document.querySelector('#wrapper').textContent += 'something went wrong! reload after 3 seconds\n' +
-      (err && err.stack) + '\n\n';
-
-  setTimeout(function () {
-    location.href = location.href;
-  }, 3000);
-}
-</script>
+<script src="./onerror.js"></script>
 <script src="./secret.js"></script>
 <script src="./config.js"></script>
 <script src="./viewer-config.js"></script>
