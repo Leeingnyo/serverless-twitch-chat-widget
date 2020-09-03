@@ -14,6 +14,63 @@
 <script src="./irc.js"></script>
 <script src="./twitch-irc.js"></script>
 <script src="./client.js"></script>
+<script>
+const splitByPosition = (string, position) => (position => ([string.slice(0, position), string.slice(position + 1)]))
+const splitByTwo = (string, divider) => splitByPosition(string, string.indexOf(divider));
+const dom = (selector, ... children) => {
+  if (selector.indexOf('#') < 0 || selector.indexOf('#') > selector.indexOf('.')) {
+    var [tagName, ... classNames] = selector.split('.');
+  } else {
+    var [tagName, idClass] = splitByTwo(selector, '#');
+    var [id, ... classNames] = idClass.split('.');
+  }
+  var element = document.createElement(tagName || 'div');
+  if (id) element.id = id;
+  for (className of classNames) element.classList.add(className);
+
+  const appendChild = (element, children) => {
+    for (child of children) {
+      if (child === null || child === undefined || Number.isNaN(child)) continue;
+      if (typeof child === 'string' || typeof child === 'number') element.appendChild(document.createTextNode(child.toString()));
+      if (typeof child === 'object') {
+        if (Array.isArray(child)) { appendChild(element, child); }
+        else if (Node.prototype.isPrototypeOf(child)) { element.appendChild(child); }
+        else {
+          const DATA = 'data', STYLE = 'style';
+          const reserved = [DATA, STYLE];
+          const keys = Object.keys(child);
+          keys.forEach(key => {
+            if (reserved.includes(key)) return;
+            element.setAttribute(key, child[key]);
+          });
+          if (child[DATA]) {
+            const data = child[DATA];
+            if (data && typeof data === 'object') {
+              for (const key of Object.keys(data)) {
+                element.dataset[key] = data[key];
+              }
+            }
+          }
+          if (child[STYLE]) {
+            const style = child[STYLE];
+            if (typeof style === 'string') {
+              element.style.cssText = style;
+            } else if (style && typeof style === 'object') {
+              for (const key of Object.keys(style)) {
+                element.style[key] = style[key];
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  appendChild(element, children);
+
+  return element;
+}
+</script>
 <script id="register handlers">
 const client = new TwitchIrcClient(configs);
 
