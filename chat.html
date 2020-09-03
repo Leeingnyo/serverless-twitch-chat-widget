@@ -165,15 +165,15 @@ ws.onmessage = e => {
 };
 
 connect(configs).then(bind);
-
+</script>
+<script id="register handlers">
+// echo
 registerHandler({
   handle: (message, say) => {
     if (message.command !== 'PRIVMSG') return;
     say(`echo: ${message.text}`);
   }
 });
-</script>
-<script id="register handlers">
 </script>
 
 </body>
