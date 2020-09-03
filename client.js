@@ -1,11 +1,26 @@
+/**
+ * @typedef {Object} Handler
+ * @property {(message: IrcMessage, say?: (text: string) => void) => void} handle
+ */
+
 class IrcClient {
+  /**
+   * create client with given configs
+   * @param {Configs} configs 
+   */
   constructor(configs) {
+    /**
+     * @type {Object.<string, Handler>}
+     */
     this.handlers = {};
     this.count = 0;
     this.configs = configs;
     this.parser = parseIrcMessages(parseIrcMessage)
   }
 
+  /**
+   * @returns {Promise<WebSocket>}
+   */
   async connect() {
     const ws = new WebSocket(this.configs.irc.webSocketUrl);
     return new Promise((resolve, reject) => {
@@ -22,12 +37,19 @@ class IrcClient {
     });
   };
 
-  send(message) {
-    if (this.ws && this.ws.readyState !== WebSocket.CLOSED) {
+  /**
+   * @param {string?} message 
+   */
+  send(message = '') {
+    if (this.ws && this.ws.readyState !== WebSocket.CLOSED && message) {
       this.ws.send(message);
     }
   }
 
+  /**
+   * @param {Handler} handler 
+   * @param {string} name 
+   */
   registerHandler(handler, name) {
     if (!handler || typeof handler.handle !== 'function') {
       throw Error('the handler is not valid');
@@ -47,8 +69,14 @@ class IrcClient {
     return delete this.handlers[name];
   }
 
+  /**
+   * @param {WebSocket} ws 
+   */
   bind(ws) {
-    const sayCache = [];
+    /**
+     * @type {Object.<string, (text: string) => void>}
+     */
+    const sayCache = {};
     ws.onmessage = e => {
       const messages = this.parser(e.data);
       if (this.configs.debug.rawMessages) {
@@ -68,7 +96,7 @@ class IrcClient {
 
         Object.freeze(message);
 
-        Object.values(this.handlers).forEach(handler => {
+        Object.values(this.handlers).forEach((/** @type {Handler} */handler) => {
           handler.handle(message, message.channel ? (
             sayCache[message.channel] ||
             (sayCache[message.channel] = function (text) { if (!configs.readOnly && text) ws.send(ircMessageHelpers.privmsg(message.channel, text)) })
@@ -84,6 +112,9 @@ class IrcClient {
   }
 }
 
+/**
+ * @extends IrcClient
+ */
 class IrcV3Client extends IrcClient {
   constructor(configs) {
     super(configs);
@@ -91,6 +122,9 @@ class IrcV3Client extends IrcClient {
   }
 };
 
+/**
+ * @extends IrcV3Client
+ */
 class TwitchIrcClient extends IrcV3Client {
   constructor(configs) {
     super(configs);

@@ -1,3 +1,6 @@
+/**
+ * @type {Configs}
+ */
 const configs = mergeConfigs(defaultConfigs, {
   irc: {
     nick: NICKNAME,
