@@ -23,7 +23,7 @@ class IrcClient {
   };
 
   send(message) {
-    if (this.ws && this.ws.readyState === WebSocket.CLOSED) {
+    if (this.ws && this.ws.readyState !== WebSocket.CLOSED) {
       this.ws.send(message);
     }
   }
