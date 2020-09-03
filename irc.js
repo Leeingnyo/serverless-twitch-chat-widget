@@ -15,9 +15,9 @@ const ircMessageHelpers = {
  * @property {string} servername 
 
  * @typedef {Object} UserSender
- * @property {string} username 
+ * @property {string?} username 
  * @property {string} nick 
- * @property {string} host 
+ * @property {string?} host 
 
  * @typedef {ServerSender|UserSender} Sender
  */
@@ -25,10 +25,10 @@ const ircMessageHelpers = {
 /**
  * @typedef {Object} IrcMessage
  * @property {string} ircString - raw irc string
- * @property {string} prefix - raw prefix string
+ * @property {string?} prefix - raw prefix string
  * @property {string} command - command
  * @property {string} params - raw params string
- * @property {Sender} sender - sender information
+ * @property {Sender?} sender - sender information
  * @property {string?} channel - channel
  * @property {string?} text - text
  */ // FIXME wrong
@@ -49,15 +49,17 @@ const parseIrcMessage = ircString => {
   const { prefix, command, params } = IRC_MESSAGE_REGEXP.exec(ircString).groups;
 
   const message = {
-    ircString, prefix, command, params
+    ircString, command, params, ... (prefix && { prefix })
   };
 
-  if (prefix.includes('!')) {
-    if (IRC_MESSAGE_PREFIX_REGEXP.test(prefix)) {
-      message.sender = IRC_MESSAGE_PREFIX_REGEXP.exec(prefix).groups;
+  if (prefix) {
+    if (prefix.includes('!')) {
+      if (IRC_MESSAGE_PREFIX_REGEXP.test(prefix)) {
+        message.sender = IRC_MESSAGE_PREFIX_REGEXP.exec(prefix).groups;
+      }
+    } else {
+      message.sender = { servername: prefix };
     }
-  } else {
-    message.sender = { servername: prefix };
   }
 
   switch (command) {
