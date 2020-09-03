@@ -3,6 +3,23 @@ const pageConfigs = {
   readOnly: currentUrl.searchParams.get('read-only') === 'true'
 };
 
+/**
+ * @typedef Configs
+ * @property {
+     { webSocketUrl: string, nick: string, user: string, token: string? }
+   } irc
+ * @property {boolean} readOnly
+ * @property {
+     { channel: string }?
+   } twitch
+ * @property {
+     { rawMessages: boolean, parsedMessages: boolean }
+   } debug
+ */
+
+/**
+ * @type {Configs}
+ */
 const defaultConfigs = {
   irc: {
     webSocketUrl: 'wss://irc-ws.chat.twitch.tv:443',
@@ -18,7 +35,8 @@ const defaultConfigs = {
 }
 
 const mergeConfigs = (one, another, ...others) => {
-  if (others.length !== 0) {
+  // FIXME watch out for call stack exceeded
+  if (others.length > 0) {
     return mergeConfigs(mergeConfigs(one, another), ...others);
   }
   /**
@@ -29,8 +47,9 @@ const mergeConfigs = (one, another, ...others) => {
 
   /**
    * deep merge two objects
-   * @param {Object} a
-   * @param {Object} b
+   * @param {Object} a - merge target a
+   * @param {Object} b - merge target b
+   * @returns {Object} merged object
    */
   const merge = (a, b) => {
     const keysOfA = Object.keys(a);
@@ -50,12 +69,12 @@ const mergeConfigs = (one, another, ...others) => {
     });
 
     return c;
-  }
+  };
 
   if (typeof one === 'undefined' && typeof another === 'undefined') return;
   if (typeof one === 'undefined') return another;
   if (typeof another === 'undefined') return one;
   if (isObject(one) && isObject(another)) return merge(one, another);
   if (typeof one === typeof another) return another; // overwrite
-  throw Error('both configs have different type at same key');
+  throw Error('both configs have different type at the same key');
 };
