@@ -6,11 +6,14 @@ const pageConfigs = {
 // add default config
 
 const configs = {
-  twitch: {
+  irc: {
     webSocketUrl: 'wss://irc-ws.chat.twitch.tv:443',
-    token: TOKEN,
     nick: NICKNAME,
+    user: undefined,
+    token: TOKEN
+  },
+  twitch: {
     channel: CHANNEL_NAME
   },
-  page: pageConfigs
+  readOnly: pageConfigs.readOnly
 };
