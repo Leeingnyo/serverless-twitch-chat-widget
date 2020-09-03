@@ -39,6 +39,14 @@ class IrcClient {
     return name;
   }
 
+  /**
+   * @param {string} name
+   * @returns {boolean}
+   */
+  deregisterHandler(name) {
+    return delete this.handlers[name];
+  }
+
   bind(ws) {
     const sayCache = [];
     ws.onmessage = e => {
