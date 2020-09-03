@@ -1,0 +1,172 @@
+<head>
+  <meta charset="utf-8">
+  <!-- custum css -->
+</head>
+<body>
+
+<div id="wrapper">
+</div>
+
+<script src="./secret.js"></script>
+<script>
+// add default config
+
+const configs = { // TODO configs.js
+  twitch: {
+    webSocketUrl: 'wss://irc-ws.chat.twitch.tv:443',
+    token: TOKEN,
+    nick: NICKNAME,
+    channel: CHANNEL_NAME
+  }
+};
+
+// irc
+const ircMessageHelpers = {
+  pong: () => 'PONG :pingis\r\n',
+  pass: (password) => `PASS oauth:${password}\r\n`,
+  nick: (nickname) => `NICK ${nickname}\r\n`,
+  join: chan => `JOIN ${chan}\r\n`,
+  part: chan => `PART ${chan}\r\n`,
+  privmsg: (chan, text) => `PRIVMSG ${chan} :${text}\r\n`,
+};
+
+const parseIrcMessage = ircString => {
+  // to constants
+  // see https://tools.ietf.org/html/rfc1459#section-2.3.1
+  const ircRegExp = /(?::(?<prefix>.*?) +)?(?<command>[a-zA-Z]+?|\d\d\d) +(?<params>.*)/; // ignore middle
+  if (!ircRegExp.test(ircString)) return null; // 이게 더 빠른가 아니면 exec 하고 null 체크하는게 더 빠른가 어차피 exec는 할 건데
+  const { prefix, command, params } = ircRegExp.exec(ircString).groups;
+
+  const message = {
+    prefix, command, params
+  };
+
+  if (prefix.includes('!')) {
+    const ircPrefixRegExp = /(?<nick>[a-zA-Z]+)(?:!(?<username>.*?)@(?<host>.*))?/;
+    if (ircPrefixRegExp.test(prefix)) {
+      message.sender = ircPrefixRegExp.exec(prefix).groups;
+    }
+  } else {
+    message.sender = { servername: prefix };
+  }
+
+  switch (command) {
+    case 'PRIVMSG': {
+      // ignore any other case but channel privmsg
+      const ircPrivmsgParamsRegExp = /(?<channel>#.*?) +:(?<text>.*)/;
+      if (ircPrivmsgParamsRegExp.test(params)) {
+        const result = ircPrivmsgParamsRegExp.exec(params).groups;
+        message.channel = result.channel;
+        message.text = result.text;
+      }
+    } break;
+  }
+
+  return message;
+};
+
+// ircv3 tag
+const parseTags = (tagString, camelCase = false) => {
+  const snakeToCamelCase = string => string.replaceAll(/-([a-z])/g, (_, c) => c.toUpperCase());
+  // See https://ircv3.net/specs/extensions/message-tags#escaping-values
+  const unescapeTagValue = escaped => escaped.replace(/\\$/, '').replaceAll(/\\(.)/g,
+      (s, c) => c === ':' ? ';' : c === 's' ? ' ' : c === '\\' ? '\\' : c === 'r' ? '\r' : c === 'n' ? '\n' : c);
+  return tagString.slice(1).split(';')
+      .map(tag => tag.split('=', 2))
+      .map(([name, value]) => ({ [camelCase ? snakeToCamelCase(name) : name]: unescapeTagValue(value) }))
+      .reduce((merged, toMerge) => ({ ...merged, ...toMerge }), {});
+};
+
+// string => string
+const isValidMessageString = messageString => messageString[0] === '@' || messageString[0] === ':';
+// string -> message
+const parseTwitchIrcMessage = messageString => {
+  if (messageString[0] === '@') { // tagged irc
+    const firstSpaceIndex = messageString.indexOf(' ');
+    var tagString = messageString.slice(0, firstSpaceIndex);
+    var ircString = messageString.slice(firstSpaceIndex + 1);
+  } else {
+    var ircString = messageString;
+  }
+  return {
+    raw: {
+      messageString,
+      tagString,
+      ircString
+    },
+    ... (tagString && { tags: parseTags(tagString, true) }), // ?
+    ... parseIrcMessage(ircString)
+  };
+};
+// string -> messages
+const parseTwitchIrcMessages = string => string.split(/\r\n|\r|\n/)
+    .filter(splitted => isValidMessageString(splitted))
+    .map(messageString => parseTwitchIrcMessage(messageString)) // to generator?
+    .filter(message => message !== null);
+
+// bot
+const connect = async (configs) => {
+  const ws = new WebSocket(configs.twitch.webSocketUrl);
+  return new Promise((resolve, reject) => {
+    ws.onopen = () => {
+      ws.send(ircMessageHelpers.pass(configs.twitch.token));
+      ws.send(ircMessageHelpers.nick(configs.twitch.nick));
+      ws.send(ircMessageHelpers.join(configs.twitch.channel));
+      resolve(ws);
+    };
+    ws.onerror = e => console.error(e);
+  });
+};
+
+const handlers = {};
+let count = 0;
+const registerHandler = (handler, name) => {
+  if (!handler || typeof handler.handle !== 'function') {
+    throw Error('the handler is not valid');
+  }
+  name = name || handler.name || (`handler${count++}`);
+
+  handlers[name] = handler;
+
+  return name;
+}
+
+const bind = async ws => {
+
+const sayCache = [];
+ws.onmessage = e => {
+  const messages = parseTwitchIrcMessages(e.data);
+  console.log(... messages);
+
+  messages.forEach(message => {
+    if (message.command === 'PING') {
+      ws.send(ircMessageHelpers.pong());
+      return;
+    }
+
+    Object.freeze(message);
+
+    Object.values(handlers).forEach(handler => {
+      handler.handle(message, message.channel ? (
+        sayCache[message.channel] ||
+        (sayCache[message.channel] = text => ws.send(ircMessageHelpers.privmsg(message.channel, text)))
+      ) : undefined);
+    });
+  });
+}
+
+};
+
+connect(configs).then(bind);
+
+registerHandler({
+  handle: (message, say) => {
+    if (message.command !== 'PRIVMSG') return;
+    say(`echo: ${message.text}`);
+  }
+});
+</script>
+<script id="register handlers">
+</script>
+
+</body>
