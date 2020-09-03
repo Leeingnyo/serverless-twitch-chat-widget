@@ -7,6 +7,12 @@
 <div id="wrapper">
 </div>
 
+<script>
+const currentUrl = new URL(location.href);
+const pageConfigs = {
+  readOnly: currentUrl.searchParams.get('read-only') === 'true'
+};
+</script>
 <script src="./secret.js"></script>
 <script>
 // add default config
@@ -17,7 +23,8 @@ const configs = { // TODO configs.js
     token: TOKEN,
     nick: NICKNAME,
     channel: CHANNEL_NAME
-  }
+  },
+  page: pageConfigs
 };
 
 // irc
@@ -149,7 +156,7 @@ ws.onmessage = e => {
     Object.values(handlers).forEach(handler => {
       handler.handle(message, message.channel ? (
         sayCache[message.channel] ||
-        (sayCache[message.channel] = text => ws.send(ircMessageHelpers.privmsg(message.channel, text)))
+        (sayCache[message.channel] = function (text) { if (!configs.page.readOnly && text) ws.send(ircMessageHelpers.privmsg(message.channel, text)) })
       ) : undefined);
     });
   });
