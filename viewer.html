@@ -1,0 +1,44 @@
+<head>
+  <meta charset="utf-8">
+  <!-- custum css -->
+</head>
+<body>
+
+<div id="wrapper">
+</div>
+
+<script>
+document.querySelector('#wrapper').style.whiteSpace = 'pre-line';
+window.onerror = function (errorMessage, _, __, ___, err) {
+  document.querySelector('#wrapper').style.whiteSpace = 'pre-line';
+  document.querySelector('#wrapper').textContent += 'something went wrong! reload after 3 seconds\n' +
+      (err && err.stack) + '\n\n';
+
+  setTimeout(function () {
+    location.href = location.href;
+  }, 3000);
+}
+</script>
+<script src="./secret.js"></script>
+<script src="./config.js"></script>
+<script src="./viewer-config.js"></script>
+<script src="./irc.js"></script>
+<script src="./twitch-irc.js"></script>
+<script src="./client.js"></script>
+<script id="register handlers">
+const client = new TwitchIrcClient(configs);
+
+client.run();
+
+// const viewer = new Viewer(configs);
+
+// echo
+client.registerHandler({
+  handle: (message, say) => {
+    if (message.command !== 'PRIVMSG') return;
+    say(`echo: ${message.text}`);
+  }
+});
+</script>
+
+</body>
