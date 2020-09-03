@@ -43,8 +43,14 @@ class IrcClient {
     const sayCache = [];
     ws.onmessage = e => {
       const messages = this.parser(e.data);
+      if (this.configs.debug.rawMessages) {
+        console.debug(e.data);
+      }
       const configs = this.configs;
-      console.log(... messages);
+
+      if (this.configs.debug.parsedMessages) {
+        console.debug(... messages);
+      }
 
       messages.forEach(message => {
         if (message.command === 'PING') {
