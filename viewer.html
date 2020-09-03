@@ -39,27 +39,15 @@ const dom = (selector, ... children) => {
           const DATA = 'data', STYLE = 'style';
           const reserved = [DATA, STYLE];
           const keys = Object.keys(child);
-          keys.forEach(key => {
-            if (reserved.includes(key)) return;
-            element.setAttribute(key, child[key]);
-          });
+          keys.filter(key => !reserved.includes(key)).forEach(key => element.setAttribute(key, child[key]));
           if (child[DATA]) {
             const data = child[DATA];
-            if (data && typeof data === 'object') {
-              for (const key of Object.keys(data)) {
-                element.dataset[key] = data[key];
-              }
-            }
+            if (data && typeof data === 'object') Object.keys(data).forEach(key => element.dataset[key] = data[key]);
           }
           if (child[STYLE]) {
             const style = child[STYLE];
-            if (typeof style === 'string') {
-              element.style.cssText = style;
-            } else if (style && typeof style === 'object') {
-              for (const key of Object.keys(style)) {
-                element.style[key] = style[key];
-              }
-            }
+            if (typeof style === 'string') element.style.cssText = style;
+            else if (style && typeof style === 'object') Object.keys(style).forEach(key => element.style[key] = style[key]);
           }
         }
       }
