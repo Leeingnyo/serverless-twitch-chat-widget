@@ -22,65 +22,14 @@ window.onerror = function (errorMessage, _, __, ___, err) {
 <script src="./config.js"></script>
 <script src="./irc.js"></script>
 <script src="./twitch-irc.js"></script>
-<script>
-// bot
-const connect = async (configs) => {
-  const ws = new WebSocket(configs.twitch.webSocketUrl);
-  return new Promise((resolve, reject) => {
-    ws.onopen = () => {
-      ws.send(ircMessageHelpers.pass(configs.twitch.token));
-      ws.send(ircMessageHelpers.nick(configs.twitch.nick));
-      ws.send(ircMessageHelpers.join(configs.twitch.channel));
-      resolve(ws);
-    };
-    ws.onerror = e => console.error(e);
-  });
-};
-
-const handlers = {};
-let count = 0;
-const registerHandler = (handler, name) => {
-  if (!handler || typeof handler.handle !== 'function') {
-    throw Error('the handler is not valid');
-  }
-  name = name || handler.name || (`handler${count++}`);
-
-  handlers[name] = handler;
-
-  return name;
-}
-
-const bind = async ws => {
-
-const sayCache = [];
-ws.onmessage = e => {
-  const messages = parseTwitchIrcMessages(e.data);
-  console.log(... messages);
-
-  messages.forEach(message => {
-    if (message.command === 'PING') {
-      ws.send(ircMessageHelpers.pong());
-      return;
-    }
-
-    Object.freeze(message);
-
-    Object.values(handlers).forEach(handler => {
-      handler.handle(message, message.channel ? (
-        sayCache[message.channel] ||
-        (sayCache[message.channel] = function (text) { if (!configs.page.readOnly && text) ws.send(ircMessageHelpers.privmsg(message.channel, text)) })
-      ) : undefined);
-    });
-  });
-}
-
-};
-
-connect(configs).then(bind);
-</script>
+<script src="./client.js"></script>
 <script id="register handlers">
+const client = new TwitchIrcClient(configs);
+
+client.run();
+
 // echo
-registerHandler({
+client.registerHandler({
   handle: (message, say) => {
     if (message.command !== 'PRIVMSG') return;
     say(`echo: ${message.text}`);
