@@ -13,6 +13,17 @@ const pageConfigs = {
   readOnly: currentUrl.searchParams.get('read-only') === 'true'
 };
 </script>
+<script>
+document.querySelector('#wrapper').style.whiteSpace = 'pre-line';
+window.onerror = function (errorMessage, _, __, ___, err) {
+  document.querySelector('#wrapper').style.whiteSpace = 'pre-line';
+  document.querySelector('#wrapper').textContent += 'something went wrong! reload after 3 seconds\n' + err.stack + '\n\n';
+
+  setTimeout(function () {
+    location.href = location.href;
+  }, 3000);
+}
+</script>
 <script src="./secret.js"></script>
 <script>
 // add default config
