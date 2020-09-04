@@ -1,0 +1,116 @@
+<head>
+  <meta charset="utf-8">
+  <style>
+.help,
+.help-modal {
+  display: none;
+}
+.help:checked + .help-modal {
+  display: block;
+}
+  </style>
+</head>
+<body>
+
+<div id="wrapper"></div>
+<script src="./dom.js"></script>
+<script>
+const secretItems = [
+  {
+    name: '인증토큰',
+    label: '인증 토큰',
+    id: 'token',
+    type: 'text',
+    default: '',
+    placeholder: 'oauth:xxx... 자세한 사항은 도움말 참고하세요',
+    pattern: '(oauth:)?[0-9a-zA-Z\\-_]{30}',
+    help: `
+<a target="_blank" href="https://twitchapps.com/tmi/">토큰 얻으러 가기</a>
+<p>다음의 절차를 따르세요</p>
+<p><img src="./token.png"></p>
+<p>Connect를 누릅니다. 트위치 로그인을 하고 앱 등록 허용을 해줍니다.</p>
+<p><img src="./copy.png"></p>
+<p>위 부분을 복사하여 붙여넣습니다.</p>
+    `,
+    mandatory: true,
+    parse: value => {
+      const [oauth, token] = value.split(':');
+      if (token) return token;
+      return oauth;
+    }
+  },
+  {
+    name: '트위치 아이디',
+    label: '트위치 아이디',
+    id: 'twitch-id',
+    type: 'text',
+    default: '',
+    placeholder: '트위치 아이디',
+    mandatory: true,
+    parse: value => {
+      try {
+        const url = new URL(value);
+        return url.pathname.slice('/');
+      } catch (err) {
+        return value;
+      }
+    }
+  }
+];
+
+const ids = secretItems.map(item => item.id);
+const parses = secretItems.map(item => ({ [item.id]: item.parse })).reduce((r, c) => Object.assign(r, c), {});
+
+var wrapper = document.querySelector('#wrapper');
+var form, button;
+wrapper.appendChild(
+  form = dom('form.form',
+    dom('ul.form-list', secretItems.map(item => {
+      var helpButton, helpModal;
+      var input;
+      var li = dom('li.form-list-item',
+        dom('label', item.label,
+          dom('input', { type: item.type, placeholder: item.placeholder, title: item.placeholder,
+              value: item.default, name: item.id, required: item.mandatory, ... (item.pattern && ({ pattern: item.pattern })) })
+        ),
+        !item.help ? null : [
+          dom('label', { for: `${item.id}-help` }, dom('img', { src: '', alt: '도움말' })),
+          helpButton = dom('input.help', { type: 'checkbox', id: `${item.id}-help` }),
+          helpModal = dom('div.help-modal')
+        ]
+      )
+      if (item.help) {
+        helpModal.innerHTML = item.help;
+      }
+      return li;
+    })),
+    dom('button', 'secret.js 생성하기'),
+    dom('p', '다운 받아서 같은 폴더에 넣어주세요.')
+  ),
+);
+form.onsubmit = e => {
+  e.preventDefault();
+  var result = {};
+  ['token', 'twitch-id'].forEach(id => {
+    result[id] = parses[id](form[id].value)
+  });
+
+  var token = result['token'];
+  var twitchId = result['twitch-id'];
+  var secretJsFileContents = secretJsFileTemplate(token, twitchId, twitchId);
+
+  var file = new File([secretJsFileContents], 'secret.js', {
+    type: 'application/javascript;charset=utf-8'
+  });
+
+  a = dom('a', { href: URL.createObjectURL(file), download: 'secret.js' })
+  a.click();
+}
+
+const secretJsFileTemplate = (token, nickname, channelName) => `const TOKEN = '${token}';
+const NICKNAME = '${nickname}';
+const CHANNEL_NAME = '#${channelName}';`
+
+</script>
+
+</body>
