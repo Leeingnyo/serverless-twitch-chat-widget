@@ -25,7 +25,13 @@ const appendChild = (element, children) => {
     }
   }
 };
-const dom = (selector, ... children) => {
+/**
+ * create DOM element
+ * @param {string} selector 
+ * @param  {...any} children 
+ * @returns {Element}
+ */
+function dom(selector, ... children) {
   if (selector.indexOf('#') < 0 || selector.indexOf('#') > selector.indexOf('.')) {
     var [tagName, ... classNames] = selector.split('.');
   } else {
@@ -38,3 +44,14 @@ const dom = (selector, ... children) => {
   appendChild(element, children);
   return element;
 }
+function setInnerHTML(dom, html) {
+  dom.innerHTML = html;
+  return dom;
+}
+/**
+ * @param {string}
+ * @returns {Text}
+ */
+ function text(str) {
+  return document.createTextNode(str);
+ }
