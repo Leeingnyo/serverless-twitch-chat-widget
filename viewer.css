@@ -1,0 +1,88 @@
+body { margin: 0; }
+ul { margin: 0; padding: 0; }
+li { list-style: none; }
+img { max-width: 100%; }
+
+.chat-list {
+  position: absolute;
+  bottom: 0;
+}
+
+chat {
+  display: block;
+  padding: 0.3em 0.5em;
+}
+chat.fade-out {
+  animation: fade-out;
+  opacity: 0%;
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 100%;
+  }
+  100% {
+    opacity: 0%;
+  }
+}
+
+chat .nick {
+  display: inline-block;
+
+  font-weight: bold;
+  color: red;
+  /* 오른쪽 아래 = (+, +) */
+  text-shadow: 
+    rgb(0, 0, 0) -1px -1px 0px,
+    rgb(0, 0, 0) -1px 0px 0px,
+    rgb(0, 0, 0) -1px 1px 0px,
+    rgb(0, 0, 0) 0px -1px 0px,
+    rgb(0, 0, 0) 0px 0px 0px,
+    rgb(0, 0, 0) 0px 1px 0px,
+    rgb(0, 0, 0) 0px 2px 0px,
+    rgb(0, 0, 0) 1px -1px 0px,
+    rgb(0, 0, 0) 1px 0px 0px,
+    rgb(0, 0, 0) 1px 1px 0px,
+    rgb(0, 0, 0) 1px 2px 0px,
+    rgb(0, 0, 0) 2px -1px 0px,
+    rgb(0, 0, 0) 2px 0px 0px,
+    rgb(0, 0, 0) 2px 1px 0px,
+    rgb(0, 0, 0) 2px 2px 0px;
+}
+
+chat .nick::after {
+  content: ":";
+  margin: 0.5em;
+}
+
+chat .message {
+  white-space: pre-line;
+  color: white;
+  /* 오른쪽 아래 = (+, +) */
+  text-shadow: 
+    rgb(0, 0, 0) -1px -1px 0px,
+    rgb(0, 0, 0) -1px 0px 0px,
+    rgb(0, 0, 0) -1px 1px 0px,
+    rgb(0, 0, 0) 0px -1px 0px,
+    rgb(0, 0, 0) 0px 0px 0px,
+    rgb(0, 0, 0) 0px 1px 0px,
+    rgb(0, 0, 0) 0px 2px 0px,
+    rgb(0, 0, 0) 1px -1px 0px,
+    rgb(0, 0, 0) 1px 0px 0px,
+    rgb(0, 0, 0) 1px 1px 0px,
+    rgb(0, 0, 0) 1px 2px 0px,
+    rgb(0, 0, 0) 2px -1px 0px,
+    rgb(0, 0, 0) 2px 0px 0px,
+    rgb(0, 0, 0) 2px 1px 0px,
+    rgb(0, 0, 0) 2px 2px 0px;
+}
+chat .message img.image {
+  vertical-align: middle;
+  display: block;
+  max-height: 10em;
+  margin: 0.4em 0;
+  margin-left: 1em;
+}
+chat .message img.emote {
+  vertical-align: middle;
+}
