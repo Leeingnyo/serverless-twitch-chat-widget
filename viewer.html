@@ -32,8 +32,17 @@ client.registerHandler({
   handle: (message) => {
     if (message.command !== 'PRIVMSG') return;
     chatList.addMessage(message);
+    // FIXME not good
   }
 });
+
+// data: { chats: [] }
+// modifier: { addMessage, removeMessage }
+// notify changes after modifying
+// add listener that makes viewer update its dom with whole data
+// caching chat doms by the id of chat
+// viewer uses modifier
+// 귀찮음
 </script>
 
 </body>
