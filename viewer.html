@@ -15,19 +15,23 @@
 <script src="./twitch-irc.js"></script>
 <script src="./client.js"></script>
 <script src="./dom.js"></script>
-<script>
-</script>
+<script src="./image-json.js"></script>
+<script src="./viewer-option.js"></script>
+<script src="./viewer.js"></script>
 <script id="register handlers">
 const client = new TwitchIrcClient(configs);
+client.run();
 
-// client.run();
-
-// const viewer = new Viewer(configs);
+const wrapper = document.querySelector('#wrapper');
+const templateBuilder = new TemplateBuilder(options, imageLinkMap);
+const chatList = new ChatList(templateBuilder, configs);
+chatList.mount(wrapper);
 
 // echo
 client.registerHandler({
   handle: (message) => {
     if (message.command !== 'PRIVMSG') return;
+    chatList.addMessage(message);
   }
 });
 </script>
