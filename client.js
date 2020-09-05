@@ -128,6 +128,7 @@ class IrcV3Client extends IrcClient {
 class TwitchIrcClient extends IrcV3Client {
   constructor(configs) {
     super(configs);
+    this.parser = parseIrcMessages(parseTwitchIrcMessage);
   }
 
   async connect() {
