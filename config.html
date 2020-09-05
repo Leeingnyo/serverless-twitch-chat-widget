@@ -1,6 +1,10 @@
 <head>
   <meta charset="utf-8">
   <style>
+img {
+  max-width: 100%;
+}
+
 .help,
 .help-modal {
   display: none;
@@ -8,12 +12,31 @@
 .help:checked + .help-modal {
   display: block;
 }
+
+.help-modal {
+  position: absolute;
+  background: white;
+  border: 1px solid;
+  padding: 20px;
+  max-width: 100%;
+  box-sizing: border-box;
+  left: 0;
+}
+
+.label-text {
+  display: inline-block;
+  min-width: 120px;
+}
+.input[type="text"], .textarea {
+  min-width: 200px;
+}
   </style>
 </head>
 <body>
 
 <div id="wrapper"></div>
 <script src="./dom.js"></script>
+<script src="./input-form.js"></script>
 <script>
 const secretItems = [
   {
@@ -26,7 +49,7 @@ const secretItems = [
     pattern: '(oauth:)?[0-9a-zA-Z\\-_]{30}',
     help: `
 <a target="_blank" href="https://twitchapps.com/tmi/">토큰 얻으러 가기</a>
-<p>다음의 절차를 따르세요</p>
+<p>위 링크에 들어간 후 다음의 절차를 따르세요</p>
 <p><img src="./token.png"></p>
 <p>Connect를 누릅니다. 트위치 로그인을 하고 앱 등록 허용을 해줍니다.</p>
 <p><img src="./copy.png"></p>
@@ -65,25 +88,7 @@ var wrapper = document.querySelector('#wrapper');
 var form, button;
 wrapper.appendChild(
   form = dom('form.form',
-    dom('ul.form-list', secretItems.map(item => {
-      var helpButton, helpModal;
-      var input;
-      var li = dom('li.form-list-item',
-        dom('label', item.label,
-          dom('input', { type: item.type, placeholder: item.placeholder, title: item.placeholder,
-              value: item.default, name: item.id, required: item.mandatory, ... (item.pattern && ({ pattern: item.pattern })) })
-        ),
-        !item.help ? null : [
-          dom('label', { for: `${item.id}-help` }, dom('img', { src: '', alt: '도움말' })),
-          helpButton = dom('input.help', { type: 'checkbox', id: `${item.id}-help` }),
-          helpModal = dom('div.help-modal')
-        ]
-      )
-      if (item.help) {
-        helpModal.innerHTML = item.help;
-      }
-      return li;
-    })),
+    dom('ul.form-list', secretItems.map(item => InputForm(item))),
     dom('button', 'secret.js 생성하기'),
     dom('p', '다운 받아서 같은 폴더에 넣어주세요.')
   ),
@@ -91,6 +96,8 @@ wrapper.appendChild(
 form.onsubmit = e => {
   e.preventDefault();
   var result = {};
+
+  // 으아악
   ['token', 'twitch-id'].forEach(id => {
     result[id] = parses[id](form[id].value)
   });
@@ -107,7 +114,10 @@ form.onsubmit = e => {
   a.click();
 }
 
-const secretJsFileTemplate = (token, nickname, channelName) => `const TOKEN = '${token}';
+const secretJsFileTemplate = (token, nickname, channelName) => `// DO NOT EDIT!
+// use config.html
+// 수정하지 말고 config.html 을 열어서 다운로드 후 덮어씌우세요
+const TOKEN = '${token}';
 const NICKNAME = '${nickname}';
 const CHANNEL_NAME = '#${channelName}';`
 
