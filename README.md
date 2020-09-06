@@ -1,5 +1,7 @@
 # 로컬 트위치 채팅창 & bot
 
+[릴리즈](https://github.com/Leeingnyo/serverless-twitch-chat-widget/releases)에 가셔서 최신 버전을 다운받으시고 압축을 해제하세요.
+
 사용법은 README.html 을 참고하세요.
 
 `secret.js`는 외부에 공개하시면 안 됩니다.
