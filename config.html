@@ -110,7 +110,7 @@ form.onsubmit = e => {
     type: 'application/javascript;charset=utf-8'
   });
 
-  a = dom('a', { href: URL.createObjectURL(file), download: 'secret.js' })
+  var a = dom('a', { href: URL.createObjectURL(file), download: 'secret.js' })
   a.click();
 }
 
