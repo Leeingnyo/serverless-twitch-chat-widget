@@ -1,23 +1,23 @@
 <head>
   <meta charset="utf-8">
-  <link rel="stylesheet" href="./viewer.css" type="text/css">
+  <link rel="stylesheet" href="./css/viewer.css" type="text/css">
 </head>
 <body>
 
 <div id="wrapper">
 </div>
 
-<script src="./onerror.js"></script>
-<script src="./secret.js"></script>
-<script src="./config.js"></script>
-<script src="./viewer-config.js"></script>
-<script src="./irc.js"></script>
-<script src="./twitch-irc.js"></script>
-<script src="./client.js"></script>
-<script src="./dom.js"></script>
-<script src="./image-json.js"></script>
-<script src="./viewer-option.js"></script>
-<script src="./viewer.js"></script>
+<script src="./js/onerror.js"></script>
+<script src="./config/secret.js"></script>
+<script src="./config/config.js"></script>
+<script src="./config/viewer-config.js"></script>
+<script src="./lib/irc.js"></script>
+<script src="./lib/twitch-irc.js"></script>
+<script src="./lib/client.js"></script>
+<script src="./lib/dom.js"></script>
+<script src="./config/image-json.js"></script>
+<script src="./config/viewer-option.js"></script>
+<script src="./js/viewer.js"></script>
 <script id="register handlers">
 const client = new TwitchIrcClient(configs);
 client.run();

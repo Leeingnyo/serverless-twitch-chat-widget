@@ -36,8 +36,8 @@ img {
 <body>
 
 <div id="wrapper"></div>
-<script src="./dom.js"></script>
-<script src="./input-form.js"></script>
+<script src="./lib/dom.js"></script>
+<script src="./js/input-form.js"></script>
 <script>
 const secretItems = [
   {
@@ -51,9 +51,9 @@ const secretItems = [
     help: `
 <a target="_blank" href="https://twitchapps.com/tmi/">토큰 얻으러 가기</a>
 <p>위 링크에 들어간 후 다음의 절차를 따르세요</p>
-<p><img src="./token.png"></p>
+<p><img src="./images/token.png"></p>
 <p>Connect를 누릅니다. 트위치 로그인을 하고 앱 등록 허용을 해줍니다.</p>
-<p><img src="./copy.png"></p>
+<p><img src="./images/copy.png"></p>
 <p>위 부분을 복사하여 붙여넣습니다.</p>
     `,
     mandatory: true,
@@ -91,7 +91,7 @@ wrapper.appendChild(
   form = dom('form.form',
     dom('ul.form-list', secretItems.map(item => InputForm(item))),
     dom('button', 'secret.js 생성하기'),
-    dom('p', '다운 받아서 같은 폴더에 넣어주세요.')
+    dom('p', '다운 받아서 config 폴더에 넣어주세요.')
   ),
 );
 form.onsubmit = e => {

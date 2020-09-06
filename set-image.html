@@ -13,8 +13,8 @@ img {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/redom/3.27.1/redom.min.js"
     integrity="sha512-sNCK+U3nOuf3wX65xAdK2d1V49aok/CCWO0lKZGSA+yh4rShNTNPfraMskwlROq0kDGWLdRByHanLpLhgUIoeg=="
     crossorigin="anonymous"></script>
-<script src="./input-form.js"></script>
-<script src="./image-json.js"></script>
+<script src="./js/input-form.js"></script>
+<script src="./config/image-json.js"></script>
 <script>
 var { el, list, mount, unmount } = redom;
 
@@ -176,7 +176,7 @@ class EditorView {
       this.ol = list('ol', EditItem),
       this.addButton =  el('button', { tyep: 'button' }, '추가하기'),
       this.saveButton = el('button', { type: 'submit' }, '저장하기'),
-      el('p', '다운로드된 파일을 같은 폴더에 넣어주세요.')
+      el('p', '다운로드된 파일을 config 폴더에 넣어주세요.')
     );
 
     this.form.onsubmit = (event) => {
