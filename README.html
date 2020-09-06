@@ -3,6 +3,7 @@
   <title>설명서</title>
 </head>
 <body>
+<p>서버리스 트위치 채팅 위젯 (version <span id="version"></span>)</p>
 <h1>설명서</h1>
 <h2>준비사항</h2>
 <ol>
@@ -21,4 +22,9 @@
 <p>단순 화면 공유를 하시는 중이라면 viewer.html 을 인터넷 브라우저로 여신 후 화면에 놓으세요.</p>
 <p>OBS studio의 경우 브라우저 컴포넌트를 추가하시고 로컬 파일에 체크하신 뒤 viewer.html을 찾아서 넣으시면 됩니다.</p>
 <p>XSplit도 비슷하게 viewer.html을 찾아서 넣으시면 됩니다 (로컬 파일이 있는지 모르겠으나 없다면 file:///~~ 로 넣으시면 됩니다).</p>
+
+<script src="version.js"></script>
+<script>
+document.querySelector('#version').textContent = version;
+</script>
 </body>
