@@ -5,6 +5,10 @@
 </head>
 <body>
 
+<p>
+  코딩하고 켜두면 봇이 되는데 여러 개 켜면 지옥이 생길 수 있으니 조심<br>
+  이거 고칠 사람은 스스로 알아서 잘 고치겠죠?
+</p>
 <div id="wrapper">
 </div>
 
@@ -20,11 +24,18 @@ const client = new TwitchIrcClient(configs);
 
 client.run();
 
-// echo
+// example echo
 client.registerHandler({
-  handle: (message, say) => {
+  /**
+   * say 를 호출하면 봇이 해당 내용을 로그인 토큰의 계정으로 말합니다.
+   * @param {TwitchIrcMessage} message
+   * @param {string => void} say
+   */
+  handle(message, say) {
     if (message.command !== 'PRIVMSG') return;
-    say(`echo: ${message.text}`);
+    if (!/^echo/.test(message.text)) {
+      say(`echo: ${message.text}`);
+    }
   }
 });
 </script>
