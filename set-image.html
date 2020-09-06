@@ -1,0 +1,214 @@
+<head>
+  <meta charset="utf-8">
+  <style>
+img {
+  display: none;
+  max-width: 100%;
+}
+  </style>
+</head>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/redom/3.27.1/redom.min.js"
+    integrity="sha512-sNCK+U3nOuf3wX65xAdK2d1V49aok/CCWO0lKZGSA+yh4rShNTNPfraMskwlROq0kDGWLdRByHanLpLhgUIoeg=="
+    crossorigin="anonymous"></script>
+<script src="./input-form.js"></script>
+<script src="./image-json.js"></script>
+<script>
+var { el, list, mount, unmount } = redom;
+
+function makeString(o) {
+  // 좋은 거 없나
+  try {
+    return o.toString();
+  } catch (err) {
+    if (o === null) return 'null';
+    return typeof o;
+  }
+}
+
+class OrderedOneDepthJsonEditor {
+  constructor(json) {
+    const keyOrder = Object.keys(json); // an initial order could have a random order
+    /**
+     * @type {Array<Array<string, string>>}
+     */
+    this.json = keyOrder.map(key => ([key, json[key].toString()]));
+    this.count = keyOrder.length;
+  }
+
+  add(key, value) {
+    this.json.push([key, value]);
+  }
+
+  delete(index) {
+    if (this.json.length <= index) return;
+    this.json.splice(index, 1);
+  }
+
+  renameKey(index, key) {
+    if (this.json.length <= index) return;
+    this.json[index][0] = key;
+  }
+
+  changeValue(index, value) {
+    if (this.json.length <= index) return;
+    this.json[index][1] = value;
+  }
+
+  toJsonString() {
+    // 먼저 온 게 값이 됨, 덮어씌우지 않음
+    const json = this.json.reduce((json, [key, value]) => (key && json[key]) ? json : Object.assign(json, { [key]: value }), {});
+    return JSON.stringify(json, this.keyOrder, 2);
+  }
+}
+
+var editor;
+try {
+  editor = new OrderedOneDepthJsonEditor(imageLinkMap);
+} catch (err) {
+  editor = new OrderedOneDepthJsonEditor({});
+}
+editor = new Proxy(editor, {
+  get(target, prop) {
+    if (Object.getOwnPropertyNames(OrderedOneDepthJsonEditor.prototype).includes(prop)) {
+      if (typeof OrderedOneDepthJsonEditor.prototype[prop] === 'function' &&
+          OrderedOneDepthJsonEditor.prototype[prop].length > 0) {
+        return new Proxy(Reflect.get(target, prop), {
+          apply(target, thisArg, argumentsList) {
+            return Reflect.apply(target, thisArg, argumentsList.map(arg => makeString(arg)));
+          }
+        });
+      }
+    }
+    return Reflect.get(target, prop);
+  }
+}); // 엌ㅋㅋ validation 귀찮으니까 전부 string으로 만들어버리기
+
+var template = (key, value) => {
+  return el('li',
+    el('label',
+      el('span', '이름'),
+      el('input', { placeholder: '키워드' })
+    ),
+    el('label',
+      el('span', '링크'),
+      el('input', { placeholder: 'URL', /* pattern: "(^\\.\\/)|(^[A-Z]:)|(^\\/)|(^https?:\\/\\/)" */ })
+    ),
+    el('button', { type: 'button' }, 'X'),
+    el('label',
+      el('span', '미리보기'),
+      el('input', { type: 'checkbox' }),
+      el('img', { style: { 'max-width': '100%' } })
+    )
+  );
+}
+
+class EditItem {
+  constructor(context, { editor, key, value } = {}) {
+    this.editor = editor;
+    this.el = this.li = template(key, value);
+    this.image = this.el.querySelector('img');
+
+    this.keyInput = this.li.querySelectorAll('input')[0];
+    this.valueInput = this.li.querySelectorAll('input')[1];
+    this.checkbox = this.li.querySelectorAll('input')[2];
+    this.deleteButton = this.li.querySelector('button');
+
+    this.deleteButton.onclick = () => {
+      this.editor.delete(this.index);
+    }
+
+    this.keyInput.oninput = () => {
+      this.editor.renameKey(this.index, this.keyInput.value);
+    }
+
+    this.valueInput.oninput = () => {
+      this.editor.changeValue(this.index, this.valueInput.value);
+    }
+  }
+
+  update({ key = '', value = '' }, index) {
+    this.index = index;
+    if (this.keyInput.value !== key) this.keyInput.value = key;
+    if (this.valueInput.value !== value) this.valueInput.value = value;
+
+    if (this.checkbox.checked) {
+      this.image.src = value;
+      this.image.alt = key;
+    }
+    this.checkbox.onchange = () => {
+      if (this.checkbox.checked) {
+        this.image.src = value;
+        this.image.alt = key;
+        this.image.style.display = 'block';
+      } else {
+        this.image.src = '';
+        this.image.style.display = '';
+      }
+    }
+  }
+}
+
+class EditorView {
+  constructor(editor) {
+    var view = this;
+    this._views = {};
+    this.editor = new Proxy(editor, {
+      get(target, prop) {
+        if (Object.getOwnPropertyNames(OrderedOneDepthJsonEditor.prototype).includes(prop)) {
+          if (typeof OrderedOneDepthJsonEditor.prototype[prop] === 'function') {
+            return new Proxy(Reflect.get(target, prop), {
+              apply(target, thisArg, argumentsList) {
+                var result = Reflect.apply(target, thisArg, argumentsList);
+                view.update({ json: editor.json });
+                return result;
+              }
+            });
+          }
+        }
+        return Reflect.get(target, prop);
+      }
+    });
+
+    this.el = this.form = el('form',
+      this.ol = list('ol', EditItem),
+      this.addButton =  el('button', { tyep: 'button' }, '추가하기'),
+      this.saveButton = el('button', { type: 'submit' }, '저장하기'),
+      el('p', '다운로드된 파일을 같은 폴더에 넣어주세요.')
+    );
+
+    this.form.onsubmit = (event) => {
+      event.preventDefault();
+      this.save();
+    }
+
+    this.addButton.onclick = (event) => {
+      event.preventDefault();
+      this.editor.add('', '');
+    }
+
+    this.update({ json: this.editor.json });
+  }
+
+  update({ json }) {
+    this.ol.update(json.map(([key, value]) => ({ editor: this.editor, key, value })));
+  }
+
+  save() {
+    const contents = this.fileTemplate(this.editor.toJsonString())
+    const file = new File([contents], 'image-json.js', { type: 'application/javascript;charset=utf-8' });
+    const a = el('a', { href: URL.createObjectURL(file), download: 'image-json.js' })
+    a.click();
+  }
+
+  fileTemplate(string) {
+    return `// DO NOT DELETE the bellow defenition 바로 아래줄은 지우지 마세요\nconst imageLinkMap =\n${string}`;
+  } 
+}
+
+const view = new EditorView(editor, document.querySelector('form'));
+mount(document.body, view);
+
+</script>
+</body>
