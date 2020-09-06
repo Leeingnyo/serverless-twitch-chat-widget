@@ -89,7 +89,11 @@ class TemplateBuilder {
    */
   messageTemplate(message) { 
     return dom('chat',
-      dom('span.nick', `${message.tags && message.tags.displayName || message.sender && message.sender.nick || '(Unknown User)'}`),
+      dom('span.nick', `${message.tags && message.tags.displayName || message.sender && message.sender.nick || '(Unknown User)'}`, {
+        style: {
+          color: this.options.colorCodes[(message.sender && message.sender.username || '(Unknown User)').split('').map(a => a.charCodeAt(0)).reduce((r, c) => r + c, 0) % this.options.colorCodes.length]
+        }
+      }),
       dom('span.message', this.messageContentProcess(message)), 
     );
   }
